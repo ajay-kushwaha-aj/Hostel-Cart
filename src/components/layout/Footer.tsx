@@ -10,22 +10,15 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-8 text-center md:text-left">
           {/* Brand & Attribution */}
           <div className="space-y-3 max-w-sm flex flex-col items-center md:items-start">
-            <Link to="/" className="inline-flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-white p-0.5 border border-slate-200/90 shadow-2xs flex items-center justify-center overflow-hidden group-hover:border-emerald-400 transition">
-                <img
-                  src="/logo.png"
-                  alt="HostelCart Logo"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-black text-lg tracking-tight text-slate-900 group-hover:text-emerald-700 transition">
-                  Hostel<span className="text-emerald-600">Cart</span>
-                </span>
-                <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 leading-none">
-                  Pilot
-                </span>
-              </div>
+            <Link to="/" className="inline-flex items-center gap-3 group">
+              <img
+                src="/logo.png"
+                alt="HostelCart Logo"
+                className="w-12 h-12 sm:w-14 sm:h-14 object-contain group-hover:scale-105 transition-transform duration-200"
+              />
+              <span className="font-black text-xl tracking-tight text-slate-900 group-hover:text-emerald-700 transition">
+                Hostel<span className="text-emerald-600">Cart</span>
+              </span>
             </Link>
 
             <p className="text-xs text-slate-500 leading-relaxed">
@@ -124,11 +117,8 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Copyright Bottom Bar */}
-        <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left text-[11px] text-slate-400">
+        <div className="pt-4 border-t border-slate-100 flex items-center justify-center text-center text-[11px] text-slate-400">
           <p>&copy; {new Date().getFullYear()} HostelCart. All rights reserved.</p>
-          <p className="font-medium text-slate-500">
-            Engineered with React 18, TypeScript, Tailwind CSS & Firebase
-          </p>
         </div>
       </div>
     </footer>

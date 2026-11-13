@@ -3,7 +3,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { PlusCircle, LogIn, LogOut } from 'lucide-react';
 import { PILOT_HOSTEL } from '@/utils/constants';
 import { useAuth } from '@/hooks/useAuth';
-import { ConnectionStatusBadge } from '@/components/common/ConnectionStatusBadge';
 
 export const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -21,23 +20,16 @@ export const Navbar: React.FC = () => {
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 transition-all">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Brand with Official HostelCart Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="relative w-11 h-11 rounded-2xl bg-white p-1 border border-slate-200/80 shadow-sm flex items-center justify-center overflow-hidden group-hover:scale-105 group-hover:border-emerald-300 transition duration-200">
-            <img
-              src="/logo.png"
-              alt="HostelCart"
-              className="w-full h-full object-contain"
-            />
-          </div>
+        <Link to="/" className="flex items-center gap-3 group">
+          <img
+            src="/logo.png"
+            alt="HostelCart"
+            className="w-12 h-12 sm:w-14 sm:h-14 object-contain group-hover:scale-105 transition-transform duration-200"
+          />
           <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-xl tracking-tight text-slate-900 group-hover:text-emerald-700 transition">
-                Hostel<span className="text-emerald-600">Cart</span>
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 leading-none">
-                Pilot
-              </span>
-            </div>
+            <span className="font-extrabold text-xl tracking-tight text-slate-900 group-hover:text-emerald-700 transition">
+              Hostel<span className="text-emerald-600">Cart</span>
+            </span>
             <div className="hidden sm:block text-[11px] text-slate-500 font-medium leading-none mt-0.5">
               {isHostelMember ? PILOT_HOSTEL.name : 'Shop Together • Save Together'}
             </div>
@@ -80,9 +72,6 @@ export const Navbar: React.FC = () => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="hidden lg:block">
-            <ConnectionStatusBadge compact />
-          </div>
           <Link
             to="/create"
             className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs sm:text-sm font-semibold shadow-sm shadow-emerald-600/30 transition-all active:scale-[0.98]"
