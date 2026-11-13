@@ -34,7 +34,6 @@ export const Footer: React.FC = () => {
                 <strong className="text-slate-900 font-bold hover:text-emerald-600 transition">
                   Ajay Kushwaha
                 </strong>
-                <Sparkles className="w-3 h-3 text-amber-500 inline-block" />
               </div>
             </div>
           </div>
