@@ -310,7 +310,7 @@ export function subscribeToHostelOrders(
   } catch (err) {
     console.warn('Realtime listener fallback:', err);
     callback(getLocalOrders().filter((o) => o.hostelId === hostelId));
-    return () => {};
+    return () => { };
   }
 }
 

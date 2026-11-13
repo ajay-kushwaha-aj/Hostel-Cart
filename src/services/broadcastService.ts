@@ -8,7 +8,9 @@ type BroadcastEventType =
   | 'ITEM_UPDATED'
   | 'ITEM_REMOVED'
   | 'PARTICIPANT_JOINED'
-  | 'PARTICIPANT_LEFT';
+  | 'PARTICIPANT_LEFT'
+  | 'PAYMENT_UPDATED'
+  | 'ADJUSTMENTS_UPDATED';
 
 export interface BroadcastMessage {
   type: BroadcastEventType;

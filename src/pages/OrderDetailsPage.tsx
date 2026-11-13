@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
+  ArrowRight,
   Share2,
   Lock,
   Plus,
@@ -28,6 +29,7 @@ import { OrderItem } from '@/types/order';
 import { useOrder } from '@/hooks/useOrder';
 import { useAuth } from '@/hooks/useAuth';
 import { subscribeToOrderItems, removeProductItem, toggleItemUnavailable } from '@/services/itemService';
+import { lockOrder, unlockOrder } from '@/services/paymentService';
 import { AddItemModal } from '@/components/products/AddItemModal';
 import { EditItemModal } from '@/components/products/EditItemModal';
 import { ConnectionStatusBadge } from '@/components/common/ConnectionStatusBadge';
@@ -148,6 +150,46 @@ export const OrderDetailsPage: React.FC = () => {
     }
   };
 
+  const handleLockOrder = async () => {
+    if (!order || !user) return;
+    if (
+      !window.confirm(
+        'Lock this group cart? Once locked, participants cannot add or edit items while you finalize checkout charges.'
+      )
+    )
+      return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await lockOrder(order.id, user.userId);
+      await refresh();
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : 'Failed to lock cart.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUnlockOrder = async () => {
+    if (!order || !user) return;
+    if (
+      !window.confirm(
+        'Unlock this group cart? Participants will be able to add, edit, or remove items again.'
+      )
+    )
+      return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await unlockOrder(order.id, user.userId);
+      await refresh();
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : 'Failed to unlock cart.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleDeleteItem = async (itemId: string) => {
     if (!window.confirm('Remove this product from the group cart?')) return;
     try {
@@ -189,7 +231,7 @@ export const OrderDetailsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Navigation Row */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <Link
           to="/dashboard"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition"
@@ -198,23 +240,141 @@ export const OrderDetailsPage: React.FC = () => {
           <span>Back to Dashboard</span>
         </Link>
 
-        <button
-          onClick={handleCopyInvite}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 transition shadow-2xs"
-        >
-          {copied ? (
-            <>
-              <Check className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Copied Link!</span>
-            </>
-          ) : (
-            <>
-              <Share2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Share Code: {order.inviteCode}</span>
-            </>
+        <div className="flex items-center gap-2">
+          {isOrganizer && ['OPEN', 'THRESHOLD_REACHED'].includes(order.status) && (
+            <button
+              onClick={handleLockOrder}
+              disabled={actionLoading}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shadow-2xs disabled:opacity-50"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span>Lock Cart</span>
+            </button>
           )}
-        </button>
+
+          {isOrganizer && order.status === 'LOCKED' && (
+            <button
+              onClick={handleUnlockOrder}
+              disabled={actionLoading}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-amber-300 bg-white hover:bg-amber-50 text-amber-800 text-xs font-bold transition shadow-2xs disabled:opacity-50"
+            >
+              <span>Unlock Cart</span>
+            </button>
+          )}
+
+          <button
+            onClick={handleCopyInvite}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 transition shadow-2xs"
+          >
+            {copied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Copied Link!</span>
+              </>
+            ) : (
+              <>
+                <Share2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Share Code: {order.inviteCode}</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* State-specific Notification Banners */}
+      {order.status === 'LOCKED' && (
+        <div className="p-4 bg-amber-50 border border-amber-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-900 shadow-2xs">
+          <div className="flex items-start gap-2.5">
+            <Lock className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-bold">Cart is Locked for Checkout</p>
+              <p className="text-[11px] text-amber-800">
+                Product additions and edits are frozen. Check the Payment Summary to view your share or coordinate checkout fees.
+              </p>
+            </div>
+          </div>
+          <Link
+            to={`/orders/${order.id}/payments`}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shadow-2xs shrink-0"
+          >
+            <span>Go to Payment Summary</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      )}
+
+      {order.status === 'PAYMENT_PENDING' && (
+        <div className="p-4 bg-sky-50 border border-sky-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sky-900 shadow-2xs">
+          <div className="flex items-start gap-2.5">
+            <Clock className="w-5 h-5 text-sky-700 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-bold">Payments in Progress</p>
+              <p className="text-[11px] text-sky-800">
+                Organizer has calculated checkout allocations. Participants please report UPI payments.
+              </p>
+            </div>
+          </div>
+          <Link
+            to={`/orders/${order.id}/payments`}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-sky-700 hover:bg-sky-800 text-white text-xs font-bold transition shadow-2xs shrink-0"
+          >
+            <span>View Payments</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      )}
+
+      {order.status === 'READY_FOR_CHECKOUT' && (
+        <div className="p-4 bg-purple-50 border border-purple-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-purple-900 shadow-2xs">
+          <div className="flex items-start gap-2.5">
+            <CheckCircle2 className="w-5 h-5 text-purple-700 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-bold">Ready for Checkout</p>
+              <p className="text-[11px] text-purple-800">
+                Payment coordination complete! Organizer is placing the order on {platform.name}.
+              </p>
+            </div>
+          </div>
+          <Link
+            to={`/orders/${order.id}/payments`}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold transition shadow-2xs shrink-0"
+          >
+            <span>View Details</span>
+          </Link>
+        </div>
+      )}
+
+      {order.status === 'PLACED' && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-emerald-900 shadow-2xs">
+          <div className="flex items-start gap-2.5">
+            <PackageOpen className="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-bold">Order Placed on {platform.name}</p>
+              <p className="text-[11px] text-emerald-800">
+                The delivery is on its way. Meet at pickup location when it arrives.
+              </p>
+            </div>
+          </div>
+          <Link
+            to={`/orders/${order.id}/payments`}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition shadow-2xs shrink-0"
+          >
+            <span>View Summary</span>
+          </Link>
+        </div>
+      )}
+
+      {order.status === 'COMPLETED' && (
+        <div className="p-4 bg-slate-100 border border-slate-300 rounded-2xl flex items-center gap-2.5 text-slate-800">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+          <div>
+            <p className="text-xs font-bold">Session Completed</p>
+            <p className="text-[11px] text-slate-600">
+              All items were delivered and distributed. Thank you for shopping together!
+            </p>
+          </div>
+        </div>
+      )}
 
       {actionError && (
         <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 flex items-start gap-2">
@@ -567,16 +727,37 @@ export const OrderDetailsPage: React.FC = () => {
       {/* Bottom Coordinator Footer */}
       <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/90 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
         <div className="text-xs text-slate-500 max-w-md">
-          <strong>Organizer Note:</strong> When the threshold is reached, freeze the cart to coordinate external payments and checkout.
+          {order.status === 'LOCKED' ? (
+            <span>
+              <strong>Cart Frozen:</strong> Proceed to checkout coordination to enter platform delivery fees and verify participant UPI payments.
+            </span>
+          ) : (
+            <span>
+              <strong>Organizer Note:</strong> When the threshold is reached, freeze the cart to coordinate external payments and checkout.
+            </span>
+          )}
         </div>
 
-        <Link
-          to={`/orders/${order.id}/payments`}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-xs"
-        >
-          <Lock className="w-4 h-4" />
-          <span>Checkout & Payment Summary</span>
-        </Link>
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          {isOrganizer && ['OPEN', 'THRESHOLD_REACHED'].includes(order.status) && (
+            <button
+              onClick={handleLockOrder}
+              disabled={actionLoading}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shadow-xs disabled:opacity-50"
+            >
+              <Lock className="w-4 h-4" />
+              <span>Lock Cart</span>
+            </button>
+          )}
+
+          <Link
+            to={`/orders/${order.id}/payments`}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-xs"
+          >
+            <span>Checkout & Payment Summary</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
       </div>
 
       {/* Add Item Modal */}
