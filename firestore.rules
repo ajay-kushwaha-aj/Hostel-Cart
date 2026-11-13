@@ -1,0 +1,107 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isHostelMember(hostelId) {
+      return isAuthenticated() && getUserData().hostelId == hostelId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && getUserData().role == 'admin';
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      // Users can only create and update their own safe profile info
+      allow create: if isUser(userId);
+      allow update: if isUser(userId) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'hostelId']);
+      allow delete: if false; // Profiles are deactivated, never deleted directly
+    }
+
+    // Hostels Collection
+    match /hostels/{hostelId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Orders Collection
+    match /orders/{orderId} {
+      // Must be member of the same hostel to read orders
+      allow read: if isAuthenticated() && isHostelMember(resource.data.hostelId);
+      
+      // Order creation: authenticated active hostel member
+      allow create: if isAuthenticated() &&
+        request.resource.data.organizerId == request.auth.uid &&
+        isHostelMember(request.resource.data.hostelId) &&
+        request.resource.data.status == 'OPEN';
+
+      // Updates: only organizer or trusted admin
+      allow update: if isAuthenticated() &&
+        (resource.data.organizerId == request.auth.uid || isAdmin());
+      
+      allow delete: if false; // Soft cancel or status transition only
+
+      // Items Subcollection
+      match /items/{itemId} {
+        allow read: if isAuthenticated();
+        
+        // Item creation: must be the owner of the item
+        allow create: if isAuthenticated() &&
+          request.resource.data.userId == request.auth.uid;
+        
+        // Item update/delete: owner can edit only while order is open
+        allow update, delete: if isAuthenticated() &&
+          resource.data.userId == request.auth.uid;
+      }
+
+      // Participants Subcollection
+      match /participants/{userId} {
+        allow read: if isAuthenticated();
+        allow create, update: if isAuthenticated() &&
+          (request.auth.uid == userId ||
+           get(/databases/$(database)/documents/orders/$(orderId)).data.organizerId == request.auth.uid);
+      }
+
+      // Payments Subcollection
+      match /payments/{paymentId} {
+        allow read: if isAuthenticated() &&
+          (resource.data.userId == request.auth.uid ||
+           get(/databases/$(database)/documents/orders/$(orderId)).data.organizerId == request.auth.uid);
+        allow create: if isAuthenticated() &&
+          (request.resource.data.userId == request.auth.uid ||
+           get(/databases/$(database)/documents/orders/$(orderId)).data.organizerId == request.auth.uid);
+        allow update: if isAuthenticated() &&
+          get(/databases/$(database)/documents/orders/$(orderId)).data.organizerId == request.auth.uid;
+      }
+
+      // Adjustments Subcollection
+      match /adjustments/{adjustmentId} {
+        allow read: if isAuthenticated();
+        allow write: if isAuthenticated() &&
+          get(/databases/$(database)/documents/orders/$(orderId)).data.organizerId == request.auth.uid;
+      }
+    }
+
+    // Reports Collection
+    match /reports/{reportId} {
+      allow create: if isAuthenticated() && request.resource.data.reporterId == request.auth.uid;
+      allow read: if isAuthenticated() && (resource.data.reporterId == request.auth.uid || isAdmin());
+      allow update, delete: if isAdmin();
+    }
+  }
+}
