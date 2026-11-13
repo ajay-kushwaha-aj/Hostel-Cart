@@ -73,7 +73,14 @@ VITE_FIREBASE_MEASUREMENT_ID=...
 VITE_USE_FIREBASE_EMULATOR=false
 ```
 
-> **Note:** The application will run smoothly in local demo mode even if placeholder credentials are used. A banner will clearly indicate development mode.
+> **Zero-Config Local Demo Mode:** When running without Firebase credentials, HostelCart automatically operates in an offline-capable reactive demonstration mode with cross-tab `BroadcastChannel` synchronization. You can test multi-user scenarios seamlessly across multiple browser tabs!
+
+#### Demo Credentials & Codes:
+- **Pilot Hostel Code:** `HOSTEL2026`
+- **Instant Persona Switching:** Click the top-right profile avatar -> "Switch Test Persona" to instantly switch between:
+  - **Ajay (Organizer)**
+  - **Rohan (Room 102 - Student)**
+  - **Sneha (Room 214 - Student)**
 
 ### 4. Running the Development Server
 

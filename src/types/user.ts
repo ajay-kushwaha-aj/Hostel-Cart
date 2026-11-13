@@ -8,6 +8,7 @@ export interface UserProfile {
   role: UserRole;
   photoURL?: string | null;
   roomNumber?: string | null;
+  upiId?: string | null;
   createdAt: number; // Unix timestamp in ms or Firestore timestamp
   updatedAt: number;
   isActive: boolean;

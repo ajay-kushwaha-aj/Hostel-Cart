@@ -10,6 +10,7 @@ export const ProfilePage: React.FC = () => {
 
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [roomNumber, setRoomNumber] = useState(user?.roomNumber || '');
+  const [upiId, setUpiId] = useState(user?.upiId || '');
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -27,6 +28,7 @@ export const ProfilePage: React.FC = () => {
       await updateProfile({
         displayName: displayName.trim(),
         roomNumber: roomNumber.trim() || null,
+        upiId: upiId.trim() || null,
       });
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2500);
@@ -87,6 +89,22 @@ export const ProfilePage: React.FC = () => {
                 placeholder="e.g. 304"
                 className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
               />
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className="block text-xs font-semibold text-slate-700">
+                UPI ID for Receiving Payments (Optional)
+              </label>
+              <input
+                type="text"
+                value={upiId}
+                onChange={(e) => setUpiId(e.target.value)}
+                placeholder="e.g. yourname@okaxis or yourname@paytm"
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              />
+              <span className="text-[10px] text-slate-400">
+                Displayed to participants when you organize group orders.
+              </span>
             </div>
           </div>
 

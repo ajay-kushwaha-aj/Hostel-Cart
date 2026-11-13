@@ -73,6 +73,26 @@ function getLocalOrders(): GroupOrder[] {
         description: 'Already crossed minimum order value. Locking soon!',
         pickupNote: 'Meet at ground floor common room',
       },
+      {
+        id: 'order_demo_3',
+        title: 'Friday Grocery & Beverages',
+        platform: 'instamart',
+        organizerId: 'u1',
+        organizerName: 'Ajay (Room 304)',
+        hostelId: PILOT_HOSTEL.id,
+        minimumAmountPaise: 24900,
+        groupItemSubtotalPaise: 26500,
+        actualCheckoutTotalPaise: 28500,
+        participantCount: 4,
+        status: 'COMPLETED',
+        inviteCode: 'CART-FRIDAY',
+        expiresAt: Date.now() - 1000 * 60 * 60 * 24,
+        createdAt: Date.now() - 1000 * 60 * 60 * 26,
+        updatedAt: Date.now() - 1000 * 60 * 60 * 24,
+        completedAt: Date.now() - 1000 * 60 * 60 * 24,
+        description: 'Juices, eggs, and cookies split together.',
+        pickupNote: 'Delivered and distributed at Room 304',
+      },
     ];
     localStorage.setItem(LOCAL_STORAGE_ORDERS_KEY, JSON.stringify(initialOrders));
     return initialOrders;

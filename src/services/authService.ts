@@ -202,7 +202,12 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
  */
 export async function updateSafeProfile(
   userId: string,
-  updates: { displayName?: string; roomNumber?: string | null; photoURL?: string | null }
+  updates: {
+    displayName?: string;
+    roomNumber?: string | null;
+    upiId?: string | null;
+    photoURL?: string | null;
+  }
 ): Promise<void> {
   if (!isFirebaseConfigured) {
     const saved = localStorage.getItem(LOCAL_STORAGE_USER_KEY);

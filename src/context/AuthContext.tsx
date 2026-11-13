@@ -23,7 +23,11 @@ interface AuthContextType {
   signInAsDemo: (role?: 'student' | 'admin', name?: string, hostelId?: string | null) => Promise<void>;
   signOut: () => Promise<void>;
   joinHostel: (inviteCode: string) => Promise<{ success: boolean; message?: string }>;
-  updateProfile: (updates: { displayName?: string; roomNumber?: string | null }) => Promise<void>;
+  updateProfile: (updates: {
+    displayName?: string;
+    roomNumber?: string | null;
+    upiId?: string | null;
+  }) => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -106,7 +110,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { success: result.success, message: result.message };
   };
 
-  const updateProfile = async (updates: { displayName?: string; roomNumber?: string | null }) => {
+  const updateProfile = async (updates: {
+    displayName?: string;
+    roomNumber?: string | null;
+    upiId?: string | null;
+  }) => {
     if (!user) return;
     await updateSafeProfile(user.userId, updates);
     setUser((prev) => (prev ? { ...prev, ...updates } : null));
