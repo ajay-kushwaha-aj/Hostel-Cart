@@ -219,3 +219,4 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ orders = DEMO_ORDE
     </div>
   );
 };
+

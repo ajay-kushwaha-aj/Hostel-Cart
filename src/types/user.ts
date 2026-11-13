@@ -21,3 +21,4 @@ export interface Hostel {
   isActive: boolean;
   createdAt: number;
 }
+

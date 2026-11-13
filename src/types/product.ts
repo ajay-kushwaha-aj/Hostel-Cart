@@ -12,3 +12,4 @@ export interface UrlItemInput {
   unitPriceRupees: number;
   note?: string;
 }
+

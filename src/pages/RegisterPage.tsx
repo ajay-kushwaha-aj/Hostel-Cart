@@ -1,24 +1,50 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, UserPlus, Lock, Mail, User, Building } from 'lucide-react';
+import { ShoppingCart, UserPlus, Lock, Mail, User, Building, Loader2 } from 'lucide-react';
 import { PILOT_HOSTEL } from '@/utils/constants';
+import { useAuth } from '@/hooks/useAuth';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
+  const { signUp } = useAuth();
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [hostelCode, setHostelCode] = useState(PILOT_HOSTEL.defaultInviteCode);
   const [loading, setLoading] = useState(false);
-  const [error] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await signUp(email, password, name, hostelCode);
+      // If code was provided and verified, go to dashboard, otherwise onboarding
+      if (hostelCode.trim().toUpperCase() === PILOT_HOSTEL.defaultInviteCode) {
+        navigate('/dashboard');
+      } else {
+        navigate('/onboarding');
+      }
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : 'Registration failed';
+      if (errMsg.includes('email-already-in-use')) {
+        setError('This email is already registered. Please sign in instead.');
+      } else if (errMsg.includes('weak-password')) {
+        setError('Password is too weak. Please use at least 6 characters.');
+      } else {
+        setError(errMsg);
+      }
+    } finally {
       setLoading(false);
-      navigate('/dashboard');
-    }, 400);
+    }
   };
 
   return (
@@ -60,7 +86,7 @@ export const RegisterPage: React.FC = () => {
 
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-              Email Address
+              Student Email
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
@@ -105,21 +131,29 @@ export const RegisterPage: React.FC = () => {
                 onChange={(e) => setHostelCode(e.target.value.toUpperCase())}
                 placeholder="e.g. HOSTEL2026"
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-mono uppercase"
-                required
               />
             </div>
             <p className="text-[11px] text-slate-500">
-              Pilot code: <code className="font-semibold text-emerald-700 font-mono">{PILOT_HOSTEL.defaultInviteCode}</code>
+              Pilot code: <code className="font-semibold text-emerald-700 font-mono">{PILOT_HOSTEL.defaultInviteCode}</code> (Can also be added later)
             </p>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-md shadow-emerald-600/20 transition active:scale-[0.99] flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-md shadow-emerald-600/20 transition active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            <UserPlus className="w-4 h-4" />
-            <span>{loading ? 'Creating Account...' : 'Register'}</span>
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Creating Account...</span>
+              </>
+            ) : (
+              <>
+                <UserPlus className="w-4 h-4" />
+                <span>Register</span>
+              </>
+            )}
           </button>
         </form>
 

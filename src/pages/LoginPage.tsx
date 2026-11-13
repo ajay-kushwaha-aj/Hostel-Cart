@@ -1,26 +1,54 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, LogIn, Lock, Mail, ArrowRight } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { ShoppingCart, LogIn, Lock, Mail, ArrowRight, Loader2, Sparkles } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { signIn, signInAsDemo } = useAuth();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Determine where to navigate after successful login
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard';
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setLoading(true);
-    // In Phase 1 / Local preview: simulate sign in
-    setTimeout(() => {
+
+    try {
+      await signIn(email, password);
+      navigate(from, { replace: true });
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : 'Failed to sign in';
+      if (errMsg.includes('user-not-found') || errMsg.includes('invalid-credential')) {
+        setError('Invalid student email or password. Please verify your credentials.');
+      } else if (errMsg.includes('wrong-password')) {
+        setError('Incorrect password. Please try again.');
+      } else {
+        setError(errMsg);
+      }
+    } finally {
       setLoading(false);
-      navigate('/dashboard');
-    }, 400);
+    }
   };
 
-  const handleDemoSignIn = () => {
-    navigate('/dashboard');
+  const handleDemoSignIn = async (name: string, role: 'student' | 'admin' = 'student') => {
+    setError(null);
+    setLoading(true);
+    try {
+      await signInAsDemo(role, name);
+      navigate(from, { replace: true });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Demo sign in failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -80,10 +108,19 @@ export const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-md shadow-emerald-600/20 transition active:scale-[0.99] flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-md shadow-emerald-600/20 transition active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            <LogIn className="w-4 h-4" />
-            <span>{loading ? 'Signing in...' : 'Sign In'}</span>
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Signing in...</span>
+              </>
+            ) : (
+              <>
+                <LogIn className="w-4 h-4" />
+                <span>Sign In</span>
+              </>
+            )}
           </button>
         </form>
 
@@ -92,18 +129,32 @@ export const LoginPage: React.FC = () => {
             <div className="w-full border-t border-slate-200" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-slate-400 font-medium">Or</span>
+            <span className="bg-white px-2 text-slate-400 font-medium">Instant One-Click Demo</span>
           </div>
         </div>
 
-        {/* Demo Fast Login for quick testing */}
-        <button
-          onClick={handleDemoSignIn}
-          className="w-full py-2.5 rounded-xl border border-emerald-300 bg-emerald-50/50 hover:bg-emerald-50 text-emerald-800 text-xs font-semibold flex items-center justify-center gap-2 transition"
-        >
-          <span>Continue as Demo Student (Instant Preview)</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </button>
+        {/* Demo Fast Login Buttons */}
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => handleDemoSignIn('Ajay (Organizer)', 'student')}
+            disabled={loading}
+            className="py-2.5 px-3 rounded-xl border border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold flex items-center justify-center gap-1.5 transition text-center"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+            <span>As Organizer</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleDemoSignIn('Rohan (Student B)', 'student')}
+            disabled={loading}
+            className="py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition text-center"
+          >
+            <ArrowRight className="w-3.5 h-3.5 text-slate-500" />
+            <span>As Student B</span>
+          </button>
+        </div>
 
         <p className="text-center text-xs text-slate-500 pt-2">
           New here?{' '}

@@ -146,3 +146,4 @@ export const PILOT_HOSTEL = {
   university: 'Campus University',
   defaultInviteCode: 'HOSTEL2026',
 };
+

@@ -32,3 +32,4 @@ describe('Money Utilities (Integer Paise Representation)', () => {
     expect(parseRupeesToPaise('-50')).toBe(0);
   });
 });
+

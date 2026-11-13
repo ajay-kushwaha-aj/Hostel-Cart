@@ -136,3 +136,4 @@ firebase deploy --only functions
 ## 📜 Disclaimer
 
 HostelCart is an independent coordination tool designed for hostel students. It does not place orders, take commissions, or process banking transactions. Third-party checkout (Blinkit, Zepto, Swiggy Instamart) is completed independently by the organizer.
+

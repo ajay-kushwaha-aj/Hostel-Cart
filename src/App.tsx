@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { Layout } from './components/layout/Layout';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
@@ -12,48 +14,94 @@ import { OrderDetailsPage } from './pages/OrderDetailsPage';
 import { PaymentSummaryPage } from './pages/PaymentSummaryPage';
 import { OrderHistoryPage } from './pages/OrderHistoryPage';
 import { ProfilePage } from './pages/ProfilePage';
-import { PILOT_HOSTEL } from './utils/constants';
 
 export const App: React.FC = () => {
-  // Simple mock user session state for Phase 1
-  const [currentUser, setCurrentUser] = useState<{
-    displayName: string;
-    role: string;
-    email: string | null;
-    hostelId?: string | null;
-  } | null>({
-    displayName: 'Ajay (Demo)',
-    role: 'student',
-    email: 'ajay.student@campus.edu',
-    hostelId: PILOT_HOSTEL.id,
-  });
-
-  const handleSignOut = () => {
-    setCurrentUser(null);
-  };
-
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<Layout user={currentUser} onSignOut={handleSignOut} />}>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/onboarding" element={<HostelOnboardingPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/create" element={<CreateOrderPage />} />
-          <Route path="/join" element={<JoinOrderPage />} />
-          <Route path="/orders/:orderId" element={<OrderDetailsPage />} />
-          <Route path="/orders/:orderId/payments" element={<PaymentSummaryPage />} />
-          <Route path="/history" element={<OrderHistoryPage />} />
-          <Route
-            path="/profile"
-            element={<ProfilePage user={currentUser} onSignOut={handleSignOut} />}
-          />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<Layout />}>
+            {/* Public Routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+
+            {/* Authenticated user who needs to join hostel */}
+            <Route
+              path="/onboarding"
+              element={
+                <ProtectedRoute requireHostel={false}>
+                  <HostelOnboardingPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Profile page (requires login) */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute requireHostel={false}>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Protected Hostel-Scoped Features */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute requireHostel={true}>
+                  <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/create"
+              element={
+                <ProtectedRoute requireHostel={true}>
+                  <CreateOrderPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/join"
+              element={
+                <ProtectedRoute requireHostel={true}>
+                  <JoinOrderPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/orders/:orderId"
+              element={
+                <ProtectedRoute requireHostel={true}>
+                  <OrderDetailsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/orders/:orderId/payments"
+              element={
+                <ProtectedRoute requireHostel={true}>
+                  <PaymentSummaryPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <ProtectedRoute requireHostel={true}>
+                  <OrderHistoryPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 };
 

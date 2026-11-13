@@ -76,3 +76,4 @@ export const JoinOrderPage: React.FC = () => {
     </div>
   );
 };
+

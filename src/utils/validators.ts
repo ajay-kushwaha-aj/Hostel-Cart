@@ -112,3 +112,4 @@ export function validateInviteCode(code: string): ValidationResult {
   }
   return { isValid: true };
 }
+
