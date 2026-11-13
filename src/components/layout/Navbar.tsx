@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { PlusCircle, LogIn, LogOut } from 'lucide-react';
 import { PILOT_HOSTEL } from '@/utils/constants';
 import { useAuth } from '@/hooks/useAuth';
+import { ConnectionStatusBadge } from '@/components/common/ConnectionStatusBadge';
 
 export const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -79,6 +80,9 @@ export const Navbar: React.FC = () => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          <div className="hidden lg:block">
+            <ConnectionStatusBadge compact />
+          </div>
           <Link
             to="/create"
             className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs sm:text-sm font-semibold shadow-sm shadow-emerald-600/30 transition-all active:scale-[0.98]"

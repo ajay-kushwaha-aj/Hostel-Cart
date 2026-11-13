@@ -163,26 +163,33 @@ export const LandingPage: React.FC = () => {
           {Object.values(PLATFORMS).map((p) => (
             <div
               key={p.id}
-              className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:border-emerald-300 hover:shadow-md transition text-center space-y-3 flex flex-col justify-between"
+              className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-sm hover:border-emerald-300 hover:shadow-lg transition-all duration-300 text-center space-y-4 flex flex-col justify-between group"
             >
-              <div className="space-y-2">
-                <div
-                  className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center font-black text-2xl text-white shadow-xs"
-                  style={{ backgroundColor: p.themeColor }}
-                >
-                  {p.name.charAt(0)}
+              <div className="space-y-3">
+                {/* Platform Official Logo Card */}
+                <div className="w-20 h-20 mx-auto rounded-2xl bg-white p-2 border border-slate-100 shadow-sm flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                  <img
+                    src={p.logoUrl}
+                    alt={`${p.name} logo`}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
-                <h3 className="font-bold text-slate-900 text-base">{p.name}</h3>
-                <p className="text-xs text-slate-500">
-                  Typical threshold: <strong className="text-slate-800">~₹{p.defaultThresholdRupees}</strong>
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-lg">{p.name}</h3>
+                  <div className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700">
+                    Typical target: ₹{p.defaultThresholdRupees}
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Combine groceries, snacks & drinks to reach minimum order value with hostel-mates.
                 </p>
               </div>
 
               <Link
                 to="/create"
-                className="w-full py-2 rounded-xl text-xs font-semibold bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 border border-slate-200 transition"
+                className="w-full py-2.5 rounded-xl text-xs font-bold bg-slate-50 group-hover:bg-emerald-600 group-hover:text-white text-slate-700 border border-slate-200/80 transition-all duration-200 shadow-2xs"
               >
-                Create {p.name} Cart
+                Start {p.name} Cart
               </Link>
             </div>
           ))}

@@ -23,6 +23,7 @@ import {
   calculateParticipantSubtotalPaise,
 } from '../utils/calculations';
 import { getOrderById } from './orderService';
+import { broadcastSyncEvent, subscribeToBroadcastSync } from './broadcastService';
 
 const LOCAL_STORAGE_ITEMS_KEY = 'hostelcart_mock_items';
 
@@ -215,6 +216,7 @@ export async function addProductItem(
     items.push(newItem);
     saveLocalItems(orderId, items);
     updateLocalOrderSubtotals(orderId, items);
+    broadcastSyncEvent('ITEM_ADDED', orderId, newItem);
     return newItem;
   }
 
@@ -321,6 +323,7 @@ export async function updateProductItem(
     items[itemIndex] = currentItem;
     saveLocalItems(orderId, items);
     updateLocalOrderSubtotals(orderId, items);
+    broadcastSyncEvent('ITEM_UPDATED', orderId, currentItem);
     return currentItem;
   }
 
@@ -391,6 +394,7 @@ export async function removeProductItem(
     items.splice(targetIdx, 1);
     saveLocalItems(orderId, items);
     updateLocalOrderSubtotals(orderId, items);
+    broadcastSyncEvent('ITEM_REMOVED', orderId, { itemId });
     return;
   }
 
@@ -433,6 +437,7 @@ export async function toggleItemUnavailable(
     target.updatedAt = Date.now();
     saveLocalItems(orderId, items);
     updateLocalOrderSubtotals(orderId, items);
+    broadcastSyncEvent('ITEM_UPDATED', orderId, { itemId });
     return target.isUnavailable;
   }
 
@@ -486,7 +491,13 @@ export function subscribeToOrderItems(
       callback(getLocalItems(orderId));
     };
     window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    const unsubBroadcast = subscribeToBroadcastSync(orderId, () => {
+      callback(getLocalItems(orderId));
+    });
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      unsubBroadcast();
+    };
   }
 
   try {

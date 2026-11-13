@@ -8,6 +8,7 @@ export interface PlatformConfig {
   bgLight: string;
   defaultThresholdRupees: number;
   allowedDomains: string[];
+  logoUrl: string;
 }
 
 export const PLATFORMS: Record<PlatformId, PlatformConfig> = {
@@ -18,6 +19,7 @@ export const PLATFORMS: Record<PlatformId, PlatformConfig> = {
     themeColor: '#f59e0b',
     bgLight: 'bg-amber-50',
     defaultThresholdRupees: 199,
+    logoUrl: '/platforms/blinkit.png',
     allowedDomains: [
       'blinkit.com',
       'www.blinkit.com',
@@ -33,6 +35,7 @@ export const PLATFORMS: Record<PlatformId, PlatformConfig> = {
     themeColor: '#9333ea',
     bgLight: 'bg-purple-50',
     defaultThresholdRupees: 149,
+    logoUrl: '/platforms/zepto.jpg',
     allowedDomains: [
       'zeptonow.com',
       'www.zeptonow.com',
@@ -46,6 +49,7 @@ export const PLATFORMS: Record<PlatformId, PlatformConfig> = {
     themeColor: '#ea580c',
     bgLight: 'bg-orange-50',
     defaultThresholdRupees: 199,
+    logoUrl: '/platforms/instamart.png',
     allowedDomains: [
       'swiggy.com',
       'www.swiggy.com',

@@ -30,6 +30,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { subscribeToOrderItems, removeProductItem, toggleItemUnavailable } from '@/services/itemService';
 import { AddItemModal } from '@/components/products/AddItemModal';
 import { EditItemModal } from '@/components/products/EditItemModal';
+import { ConnectionStatusBadge } from '@/components/common/ConnectionStatusBadge';
 
 export const OrderDetailsPage: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -236,6 +237,7 @@ export const OrderDetailsPage: React.FC = () => {
             >
               {status.label}
             </span>
+            <ConnectionStatusBadge compact />
           </div>
 
           <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">

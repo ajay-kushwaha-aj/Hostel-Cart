@@ -127,11 +127,12 @@ export const CreateOrderPage: React.FC = () => {
                         : 'border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50/50'
                     }`}
                   >
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-base shadow-xs"
-                      style={{ backgroundColor: p.themeColor }}
-                    >
-                      {p.name.charAt(0)}
+                    <div className="w-12 h-12 rounded-xl bg-white p-1 border border-slate-100 flex items-center justify-center overflow-hidden shadow-2xs">
+                      <img
+                        src={p.logoUrl}
+                        alt={p.name}
+                        className="w-full h-full object-contain"
+                      />
                     </div>
                     <span className="font-bold text-xs sm:text-sm text-slate-900 leading-tight">
                       {p.name}

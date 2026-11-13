@@ -14,6 +14,7 @@ import { db, isFirebaseConfigured } from './firebase';
 import { GroupOrder, PlatformId, Participant } from '../types/order';
 import { validateThresholdRupees, validateInviteCode } from '../utils/validators';
 import { PILOT_HOSTEL } from '../utils/constants';
+import { broadcastSyncEvent, subscribeToBroadcastSync } from './broadcastService';
 
 const LOCAL_STORAGE_ORDERS_KEY = 'hostelcart_mock_orders';
 const LOCAL_STORAGE_PARTICIPANTS_KEY = 'hostelcart_mock_participants';
@@ -215,6 +216,7 @@ export async function createGroupOrder(params: CreateOrderParams): Promise<Group
     orders.unshift(orderData);
     saveLocalOrders(orders);
     saveLocalParticipants(orderId, [organizerParticipant]);
+    broadcastSyncEvent('ORDER_UPDATED', orderId, orderData);
     return orderData;
   }
 
@@ -273,13 +275,19 @@ export function subscribeToHostelOrders(
   callback: (orders: GroupOrder[]) => void
 ): () => void {
   if (!isFirebaseConfigured) {
-    // Emit current local orders and listen to storage events
+    // Emit current local orders and listen to storage and broadcast events
     callback(getLocalOrders().filter((o) => o.hostelId === hostelId));
     const handleStorage = () => {
       callback(getLocalOrders().filter((o) => o.hostelId === hostelId));
     };
     window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    const unsubBroadcast = subscribeToBroadcastSync('all', () => {
+      callback(getLocalOrders().filter((o) => o.hostelId === hostelId));
+    });
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      unsubBroadcast();
+    };
   }
 
   try {
@@ -347,7 +355,13 @@ export function subscribeToOrder(
       callback(getLocalOrders().find((o) => o.id === orderId) || null);
     };
     window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    const unsubBroadcast = subscribeToBroadcastSync(orderId, () => {
+      callback(getLocalOrders().find((o) => o.id === orderId) || null);
+    });
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      unsubBroadcast();
+    };
   }
 
   const orderRef = doc(db, 'orders', orderId);
@@ -473,6 +487,7 @@ export async function joinGroupOrder(
       saveLocalOrders(orders);
     }
 
+    broadcastSyncEvent('PARTICIPANT_JOINED', orderId, { userId });
     return { success: true, message: 'Joined group cart successfully!', order };
   }
 
@@ -550,6 +565,7 @@ export async function leaveGroupOrder(
         orders[orderIdx].updatedAt = Date.now();
         saveLocalOrders(orders);
       }
+      broadcastSyncEvent('PARTICIPANT_LEFT', orderId, { userId });
     }
     return { success: true, message: 'You have left this group cart.' };
   }
