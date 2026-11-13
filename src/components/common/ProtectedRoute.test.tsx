@@ -168,3 +168,4 @@ describe('ProtectedRoute Navigation Guard (Phase 2)', () => {
     expect(screen.getByText('Welcome to Pilot Hostel Dashboard')).toBeInTheDocument();
   });
 });
+

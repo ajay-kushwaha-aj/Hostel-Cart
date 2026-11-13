@@ -116,3 +116,4 @@ export async function getHostelDetails(hostelId: string): Promise<Hostel | null>
     return null;
   }
 }
+

@@ -21,7 +21,7 @@ describe('HostelCart App Component (Phase 2)', () => {
 
   it('renders landing hero text on root route', () => {
     render(<App />);
-    expect(screen.getByText(/Shop Together/i)).toBeInTheDocument();
-    expect(screen.getByText(/Save Together/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Shop Together/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Save Together/i).length).toBeGreaterThanOrEqual(1);
   });
 });

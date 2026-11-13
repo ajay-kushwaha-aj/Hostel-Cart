@@ -34,3 +34,4 @@ describe('Hostel Service (Phase 2)', () => {
     expect(details?.name).toBe(PILOT_HOSTEL.name);
   });
 });
+
